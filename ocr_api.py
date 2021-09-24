@@ -10,6 +10,14 @@ from ocr_service import *
 
 app = FastAPI()
 
+def startAPI():
+    import uvicorn
+    uvicorn.run(
+        app=app,
+        host="0.0.0.0",
+        port=8080,
+        workers=1)
+
 @app.post('/recognize')
 def recognize(request_data: RecognizeRequestVO):
     vo = RecognizeResponseVO()
@@ -26,10 +34,3 @@ def recognize(request_data: RecognizeRequestVO):
 def test(name: str = None):
     return "hello "+name
 
-if __name__ == '__main__':
-    import uvicorn
-    uvicorn.run(
-        app=app,
-        host="0.0.0.0",
-        port=8080,
-        workers=1)
