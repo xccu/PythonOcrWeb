@@ -4,6 +4,7 @@
 
 # API文档：http://127.0.0.1:8080/docs#
 
+from ocr_config import *
 from fastapi import FastAPI
 from ocr_vo import *
 from ocr_service import *
@@ -11,11 +12,12 @@ from ocr_service import *
 app = FastAPI()
 
 def startAPI():
+
     import uvicorn
     uvicorn.run(
-        app=app,
-        host="0.0.0.0",
-        port=8080,
+        app =app,
+        host=get_option("Web","host"),
+        port=int(get_option("Web","port")),
         workers=1)
 
 @app.post('/recognize')
