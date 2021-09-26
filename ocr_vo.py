@@ -9,6 +9,7 @@ class RecognizeRequestVO(BaseModel):
     path: str = None
 
 class RecognizeResponseVO(BaseModel):
-    path: str = None
+    file: str = None
+    time: float = None
     data: OcrData=[]
 
