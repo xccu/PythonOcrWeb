@@ -65,11 +65,35 @@ async def recognize(fileb: UploadFile = File(...)):
 
     # res = {"res": True}
     vo.file = fileb.filename
-    vo.data = results
+    vo.info = results
     vo.time = end-start
     return vo
 
 @app.get('/test/name={name}')
 def test(name: str = None):
-    return "hello "+name
+    # 程序计时器启动
+    start = time.perf_counter()
+    test_img_path = [
+        r'D:\screenshot\0.jpg',
+        r'D:\screenshot\1.jpg',
+        r'D:\screenshot\2.jpg',
+        r'D:\screenshot\3.jpg',
+        r'D:\screenshot\4.jpg',
+        r'D:\screenshot\5.jpg',
+        r'D:\screenshot\6.jpg',
+        r'D:\screenshot\7.jpg',
+        r'D:\screenshot\8.jpg',
+        r'D:\screenshot\9.jpg']
+    # test_img_path = [r'D:\list2.jpg']
+    np_images = [cv2.imread(image_path) for image_path in test_img_path]
+    sercice = OcrService()
+    results = sercice.recognize(np_images)
+
+    # 计算启动时间和结束时间的时间差
+    end = time.perf_counter()
+    vo = RecognizeResponseVO()
+    vo.file = 'test.jpg'
+    vo.info = results
+    vo.time = end - start
+    return vo
 

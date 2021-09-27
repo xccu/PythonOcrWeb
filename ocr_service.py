@@ -11,8 +11,6 @@ import paddlehub as hub
 from ocr_vo import *
 from ocr_config import *
 
-
-
 class OcrService():
 
     def __init__(self):
@@ -29,8 +27,14 @@ class OcrService():
         # chinese_ocr_db_crnn_server
         self.ocr = hub.Module(name=self.module)
 
-    def recognize(self, path):
-        np_images =[cv2.imread(path)] #读取测试文件夹test.txt中的照片路径
+    def recognize(self, data):
+
+        np_images =None
+        if type(data) == str:
+            np_images =[cv2.imread(data)] #读取测试文件夹test.txt中的照片路径
+        elif type(data) == list:
+            np_images = data
+
         results = self.ocr.recognize_text(
             images=np_images,               #图片数据，ndarray.shape 为 [H, W, C]，BGR格式；
             use_gpu=self.useGpu,            #是否使用 GPU；若使用GPU，请先设置CUDA_VISIBLE_DEVICES环境变量
@@ -40,22 +44,22 @@ class OcrService():
             text_thresh=self.textThresh)    #识别中文文本置信度的阈值；（准确率）
 
         self.text = []
-        ocrDatas: OcrData = []
+        ocrInfos: OcrInfo = []
         for result in results:
-            data = result['data']
-            save_path = result['save_path']
-            for infomation in data:
+            ocrDatas: OcrData = []
+            info =OcrInfo()
+            info.path=result['save_path']
+            datas = result['data']
+            for infomation in datas:
                 ocrData = OcrData()
                 ocrData.text = infomation['text']
                 ocrData.confidence = infomation['confidence']
                 ocrData.position = str(infomation['text_box_position'])
-                print('text: ', infomation['text'],
-                      '\tconfidence: ', infomation['confidence'],
-                      '\tposition: ', infomation['text_box_position'])
                 self.text.append(str(infomation['text']))
                 ocrDatas.append(ocrData)
-
-        return ocrDatas
+            info.data = ocrDatas
+            ocrInfos.append(info);
+        return ocrInfos
 
     def writeText(self, filename):
         with open(filename, 'w') as f:
