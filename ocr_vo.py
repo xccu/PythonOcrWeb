@@ -1,13 +1,15 @@
 from pydantic import BaseModel
 
+#Ocr识别数据
 class OcrData(BaseModel):
     text : str = None
     confidence : str = None
     position : str=None
 
-class OcrInfo(BaseModel):
+#Ocr截图
+class OcrSnap(BaseModel):
     path: str = None
-    data: OcrData=[]
+    datas: OcrData=[]
 
 class RecognizeRequestVO(BaseModel):
     path: str = None
@@ -15,5 +17,5 @@ class RecognizeRequestVO(BaseModel):
 class RecognizeResponseVO(BaseModel):
     file: str = None
     time: float = None
-    info: OcrInfo=[]
+    snaps: OcrSnap=[]
 

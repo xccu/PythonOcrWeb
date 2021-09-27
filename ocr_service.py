@@ -44,22 +44,22 @@ class OcrService():
             text_thresh=self.textThresh)    #识别中文文本置信度的阈值；（准确率）
 
         self.text = []
-        ocrInfos: OcrInfo = []
+        snaps : OcrSnap = []
         for result in results:
-            ocrDatas: OcrData = []
-            info =OcrInfo()
-            info.path=result['save_path']
+            ocrDatas : OcrData = []
+            snap =OcrSnap()
+            snap.path=result['save_path']
             datas = result['data']
-            for infomation in datas:
+            for data in datas:
                 ocrData = OcrData()
-                ocrData.text = infomation['text']
-                ocrData.confidence = infomation['confidence']
-                ocrData.position = str(infomation['text_box_position'])
-                self.text.append(str(infomation['text']))
+                ocrData.text = data['text']
+                ocrData.confidence = data['confidence']
+                ocrData.position = str(data['text_box_position'])
+                self.text.append(str(data['text']))
                 ocrDatas.append(ocrData)
-            info.data = ocrDatas
-            ocrInfos.append(info);
-        return ocrInfos
+            snap.datas = ocrDatas
+            snaps.append(snap);
+        return snaps
 
     def writeText(self, filename):
         with open(filename, 'w') as f:

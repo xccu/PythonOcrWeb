@@ -65,7 +65,7 @@ async def recognize(fileb: UploadFile = File(...)):
 
     # res = {"res": True}
     vo.file = fileb.filename
-    vo.info = results
+    vo.snaps = results
     vo.time = end-start
     return vo
 
@@ -93,7 +93,7 @@ def test(name: str = None):
     end = time.perf_counter()
     vo = RecognizeResponseVO()
     vo.file = 'test.jpg'
-    vo.info = results
+    vo.snaps = results
     vo.time = end - start
     return vo
 
