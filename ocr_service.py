@@ -66,6 +66,7 @@ class OcrService():
             for i in self.text:
                 f.write(str(i))
 
+
 class TemplateService():
     def __init__(self):
         obj=None
@@ -75,20 +76,18 @@ class TemplateService():
         img = cv2.imread(path)
         boxes_len = len(boxes)
         num = 0
-        while 1:
-            if (num < boxes_len):
-                box = boxes[num]
-                tl = box[0]  # 左上
-                tr = box[1]  # 右上
-                br = box[2]  # 右下
-                bl = box[3]  # 左下
-                print("打印转换成功数据num =" + str(num))
-                print("tl:" + str(tl), "tr:" + str(tr), "br:" + str(br), "bl:" + str(bl))
-                print(tr[1], bl[1], tl[0], br[0])
 
-                # crop = img[153:177,131:250] #测试
-                crop = img[int(tr[1]):int(bl[1]), int(tl[0]):int(br[0])]
-                cv2.imwrite("D:/screenshot/" + str(num) + ".jpg", crop)
-                num = num + 1
-            else:
-                break
+        while (num < boxes_len):
+            box = boxes[num]
+            tl = box[0]  # 左上
+            tr = box[1]  # 右上
+            br = box[2]  # 右下
+            bl = box[3]  # 左下
+            #print("打印转换成功数据num =" + str(num))
+            #print("tl:" + str(tl), "tr:" + str(tr), "br:" + str(br), "bl:" + str(bl))
+            print(tr[1], bl[1], tl[0], br[0])
+
+            # crop = img[153:177,131:250] #测试
+            crop = img[int(tr[1]):int(bl[1]), int(tl[0]):int(br[0])]
+            cv2.imwrite("./temp/" + str(num) + ".jpg", crop)
+            num = num + 1

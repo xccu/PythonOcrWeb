@@ -1,3 +1,4 @@
+
 from pydantic import BaseModel
 
 #Ocr识别数据
@@ -11,6 +12,19 @@ class OcrSnap(BaseModel):
     path: str = None
     datas: OcrData=[]
 
+class Box():
+    def __init__(self, title, *position):
+        self.text: str= title
+        self.position: int = []
+        self.position += position
+
+class Template():
+    def __init__(self, name, *boxes):
+        self.name: str= name
+        self.boxes: Box=[]
+        self.boxes+= boxes
+
+
 #http请求vo
 class RecognizeRequestVO(BaseModel):
     path: str = None
@@ -21,13 +35,6 @@ class RecognizeResponseVO(BaseModel):
     time: float = None
     snaps: OcrSnap=[]
 
-class Box():
-    title: str=None
-    position: int=[[]]
-
-class Template():
-    name: str=None
-    boxes: Box=[]
 
 
 
