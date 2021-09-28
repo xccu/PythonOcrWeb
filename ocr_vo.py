@@ -11,11 +11,23 @@ class OcrSnap(BaseModel):
     path: str = None
     datas: OcrData=[]
 
+#http请求vo
 class RecognizeRequestVO(BaseModel):
     path: str = None
 
+#http响应vo
 class RecognizeResponseVO(BaseModel):
     file: str = None
     time: float = None
     snaps: OcrSnap=[]
+
+class Box():
+    title: str=None
+    position: int=[[]]
+
+class Template():
+    name: str=None
+    boxes: Box=[]
+
+
 

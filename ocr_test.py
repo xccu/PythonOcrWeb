@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+from ocr_vo import *
 
 def shot(path, dt_boxes):  # 应用于predict_det.py中,通过dt_boxes中获得的四个坐标点,裁剪出图像
     img = cv2.imread(path)
@@ -24,6 +25,13 @@ def shot(path, dt_boxes):  # 应用于predict_det.py中,通过dt_boxes中获得�
             break
 
 if __name__ == '__main__':
+
+    template = Template()
+    box= Box()
+    box.title='标题'
+    box.position = [[126, 148], [255, 148], [255, 182], [126, 182]]
+    template.boxes.append(box)
+
 
     # 左上,右上,右下,左下
     boxes=[]
