@@ -3,14 +3,18 @@
 #   paddlepaddle    2.1.2
 #   shapely         1.7.1
 #   pyclipper       1.3.0
-
+import json
 import os
+
+import ocr_util
+
 os.environ['HUB_HOME'] = "./modules"
 import cv2
 import paddlehub as hub
 from ocr_vo import *
 from ocr_config import *
 
+# Ocr识别类
 class OcrService():
 
     def __init__(self):
@@ -46,18 +50,18 @@ class OcrService():
         self.text = []
         snaps : OcrSnap = []
         for result in results:
-            ocrDatas : OcrData = []
+            ocr_datas : OcrData = []
             snap =OcrSnap()
             snap.path=result['save_path']
             datas = result['data']
             for data in datas:
-                ocrData = OcrData()
-                ocrData.text = data['text']
-                ocrData.confidence = data['confidence']
-                ocrData.position = str(data['text_box_position'])
+                ocr_data = OcrData()
+                ocr_data.text = data['text']
+                ocr_data.confidence = data['confidence']
+                ocr_data.position = str(data['text_box_position'])
                 self.text.append(str(data['text']))
-                ocrDatas.append(ocrData)
-            snap.datas = ocrDatas
+                ocr_datas.append(ocr_data)
+            snap.datas = ocr_datas
             snaps.append(snap);
         return snaps
 
@@ -66,28 +70,44 @@ class OcrService():
             for i in self.text:
                 f.write(str(i))
 
-
+# 模板处理类
 class TemplateService():
-    def __init__(self):
-        obj=None
+    def __init__(self,img_root = './file/',template_root='./templates/'):
+        self.img_root= img_root
+        self.template_root=template_root
 
-    # 应用于predict_det.py中,通过dt_boxes中获得的四个坐标点,裁剪出图像
-    def shot(self,path,boxes):
-        img = cv2.imread(path)
+    def split_image(self,file_name,template):
+        # 从json中读取模板信息
+        json_str = ocr_util.read(self.template_root+template)
+
+        temp = json.loads(json_str)
+        boxes = temp['boxes']
+        # boxes = []
+        # for box in temp_boxes:
+        #     boxes.append(box['position'])
+
+        return self.shot(file_name, boxes)
+
+    # 通过boxes中获得的四个坐标点,裁剪出图像
+    def shot(self,file_name,boxes):
+
+        text = []
+        img = cv2.imread(self.img_root+file_name)
         boxes_len = len(boxes)
         num = 0
 
         while (num < boxes_len):
             box = boxes[num]
-            tl = box[0]  # 左上
-            tr = box[1]  # 右上
-            br = box[2]  # 右下
-            bl = box[3]  # 左下
-            #print("打印转换成功数据num =" + str(num))
-            #print("tl:" + str(tl), "tr:" + str(tr), "br:" + str(br), "bl:" + str(bl))
+            tl = box['position'][0]  # 左上
+            tr = box['position'][1]  # 右上
+            br = box['position'][2]  # 右下
+            bl = box['position'][3]  # 左下
             print(tr[1], bl[1], tl[0], br[0])
 
             # crop = img[153:177,131:250] #测试
             crop = img[int(tr[1]):int(bl[1]), int(tl[0]):int(br[0])]
-            cv2.imwrite("./temp/" + str(num) + ".jpg", crop)
+            text.append("./temp/{}-{}-{}".format(str(num),box['field'],file_name))
+            # cv2.imwrite("./temp/{}-{}-{}".format(str(num),box['field'],file_name), crop)
+            cv2.imencode('.jpg', crop)[1].tofile("./temp/{}-{}-{}".format(str(num),box['field'],file_name))
             num = num + 1
+        return text

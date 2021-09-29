@@ -4,7 +4,7 @@
 #   python-multipart    0.0.5
 
 # API文档：http://127.0.0.1:8080/docs#
-
+import ocr_util
 from ocr_config import *
 from fastapi import FastAPI, File, UploadFile
 # from starlette.responses import FileResponse
@@ -53,8 +53,7 @@ async def recognize(fileb: UploadFile = File(...)):
     # 二进制流读取前端上传到的fileb文件
     contents = await fileb.read()
     # 写文件 将获取的fileb文件内容，写入到新文件中
-    with open("./file/" + fileb.filename, "wb") as f:
-        f.write(contents)
+    ocr_util.write_bytes("./file/" + fileb.filename,contents)
     #开始识别
     vo = RecognizeResponseVO()
     sercice = OcrService()
@@ -67,6 +66,31 @@ async def recognize(fileb: UploadFile = File(...)):
     vo.file = fileb.filename
     vo.snaps = results
     vo.time = end-start
+    return vo
+
+
+@app.post("/split")
+async def split_recognize(fileb: UploadFile = File(...)):
+    # 程序计时器启动
+    start = time.perf_counter()
+    # 二进制流读取前端上传到的fileb文件
+    contents = await fileb.read()
+    # 写文件 将获取的fileb文件内容，写入到新文件中
+    ocr_util.write_bytes("./file/" + fileb.filename,contents)
+
+    service = TemplateService()
+    splits = service.split_image(fileb.filename,'template1.json')
+
+    np_images = [cv2.imread(image_path) for image_path in splits]
+    sercice = OcrService()
+    results = sercice.recognize(np_images)
+    # 计算启动时间和结束时间的时间差
+    end = time.perf_counter()
+
+    vo = RecognizeResponseVO()
+    vo.file = fileb.filename
+    vo.snaps = results
+    vo.time = end - start
     return vo
 
 @app.get('/test/name={name}')

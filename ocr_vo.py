@@ -13,8 +13,8 @@ class OcrSnap(BaseModel):
     datas: OcrData=[]
 
 class Box():
-    def __init__(self, title, *position):
-        self.text: str= title
+    def __init__(self, field, *position):
+        self.field: str= field
         self.position: int = []
         self.position += position
 

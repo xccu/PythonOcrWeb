@@ -1,12 +1,12 @@
 import json
 
-from ocr_common import file_utils
+import  ocr_util
 from ocr_service import TemplateService
 from ocr_vo import *
 
 
 if __name__ == '__main__':
-    testStr = file_utils.read('templates/template1.json')
+    testStr = ocr_util.read('templates/template1.json')
 
 
     temp = json.loads(testStr)
