@@ -50,10 +50,8 @@ async def recognize(fileb: UploadFile = File(...)):
 
     # 程序计时器启动
     start = time.perf_counter()
-    # 二进制流读取前端上传到的fileb文件
-    contents = await fileb.read()
     # 写文件 将获取的fileb文件内容，写入到新文件中
-    ocr_util.write_bytes("./file/" + fileb.filename,contents)
+    ocr_util.async_write_fileb("./file/" + fileb.filename, fileb)
     #开始识别
     vo = RecognizeResponseVO()
     sercice = OcrService()
@@ -73,10 +71,8 @@ async def recognize(fileb: UploadFile = File(...)):
 async def split_recognize(fileb: UploadFile = File(...)):
     # 程序计时器启动
     start = time.perf_counter()
-    # 二进制流读取前端上传到的fileb文件
-    contents = await fileb.read()
     # 写文件 将获取的fileb文件内容，写入到新文件中
-    ocr_util.write_bytes("./file/" + fileb.filename,contents)
+    ocr_util.async_write_fileb("./file/" + fileb.filename, fileb)
 
     service = TemplateService()
     splits = service.split_image(fileb.filename,'template1.json')
@@ -93,31 +89,19 @@ async def split_recognize(fileb: UploadFile = File(...)):
     vo.time = end - start
     return vo
 
+@app.post('/detect')
+def detect(fileb: UploadFile = File(...)):
+    # 写文件 将获取的fileb文件内容，写入到新文件中
+    ocr_util.async_write_fileb("./file/" + fileb.filename, fileb)
+
+    sercice = OcrService()
+    return sercice.detect_position("./file/" + fileb.filename)
+
+@app.delete('/clean')
+def clean():
+    return ocr_util.clean_folder('./temp')
+
 @app.get('/test/name={name}')
 def test(name: str = None):
-    # 程序计时器启动
-    start = time.perf_counter()
-    test_img_path = [
-        r'D:\screenshot\0.jpg',
-        r'D:\screenshot\1.jpg',
-        r'D:\screenshot\2.jpg',
-        r'D:\screenshot\3.jpg',
-        r'D:\screenshot\4.jpg',
-        r'D:\screenshot\5.jpg',
-        r'D:\screenshot\6.jpg',
-        r'D:\screenshot\7.jpg',
-        r'D:\screenshot\8.jpg',
-        r'D:\screenshot\9.jpg']
-    # test_img_path = [r'D:\list2.jpg']
-    np_images = [cv2.imread(image_path) for image_path in test_img_path]
-    sercice = OcrService()
-    results = sercice.recognize(np_images)
-
-    # 计算启动时间和结束时间的时间差
-    end = time.perf_counter()
-    vo = RecognizeResponseVO()
-    vo.file = 'test.jpg'
-    vo.snaps = results
-    vo.time = end - start
-    return vo
+    return name
 

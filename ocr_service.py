@@ -22,14 +22,28 @@ class OcrService():
 
         # 读取配置
         self.module = get_option("Ocr", "module")
-        self.useGpu = bool(int(get_option("Ocr", "useGpu")))
+        self.use_gpu = bool(int(get_option("Ocr", "useGpu")))
         self.output = bool(int(get_option("Ocr", "output")))
-        self.boxThresh = float(get_option("Ocr", "boxThresh"))
-        self.textThresh = float(get_option("Ocr", "textThresh"))
+        self.box_thresh = float(get_option("Ocr", "boxThresh"))
+        self.text_thresh = float(get_option("Ocr", "textThresh"))
 
         # chinese_ocr_db_crnn_mobile
         # chinese_ocr_db_crnn_server
         self.ocr = hub.Module(name=self.module)
+
+    def detect_position(self, data):
+        np_images = None
+        if type(data) == str:
+            np_images = [cv2.imread(data)]  # 读取测试文件夹test.txt中的照片路径
+        elif type(data) == list:
+            np_images = data
+
+        detection_results=self.ocr.text_detector_module.detect_text(
+            images=np_images,
+            use_gpu=self.use_gpu,
+            box_thresh=self.box_thresh)  #探测文本的位置
+
+        return detection_results
 
     def recognize(self, data):
 
@@ -41,11 +55,11 @@ class OcrService():
 
         results = self.ocr.recognize_text(
             images=np_images,               #图片数据，ndarray.shape 为 [H, W, C]，BGR格式；
-            use_gpu=self.useGpu,            #是否使用 GPU；若使用GPU，请先设置CUDA_VISIBLE_DEVICES环境变量
+            use_gpu=self.use_gpu,           #是否使用 GPU；若使用GPU，请先设置CUDA_VISIBLE_DEVICES环境变量
             output_dir='ocr_result',        #图片的保存路径，默认设为 ocr_result；
             visualization=self.output,      #是否将识别结果保存为图片文件；
-            box_thresh=self.boxThresh,      #检测文本框置信度的阈值；（准确率）
-            text_thresh=self.textThresh)    #识别中文文本置信度的阈值；（准确率）
+            box_thresh=self.box_thresh,      #检测文本框置信度的阈值；（准确率）
+            text_thresh=self.text_thresh)    #识别中文文本置信度的阈值；（准确率）
 
         self.text = []
         snaps : OcrSnap = []
@@ -82,9 +96,6 @@ class TemplateService():
 
         temp = json.loads(json_str)
         boxes = temp['boxes']
-        # boxes = []
-        # for box in temp_boxes:
-        #     boxes.append(box['position'])
 
         return self.shot(file_name, boxes)
 
