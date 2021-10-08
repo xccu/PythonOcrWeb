@@ -10,9 +10,9 @@ from fastapi import FastAPI, File, UploadFile
 # from starlette.responses import FileResponse
 from ocr_vo import *
 from ocr_service import *
+from ocr_util import *
 
 #计时所需要的时间库
-import datetime
 import time
 
 app = FastAPI()
@@ -29,14 +29,14 @@ def startAPI():
 @app.post('/recognize/local')
 async def recognize_local(request_data: RecognizeRequestVO):
 
-    # 程序计时器，启动计时器
+    # 程序计时器启动
     start = time.perf_counter()
 
     vo = RecognizeResponseVO()
     sercice = OcrService()
     results = sercice.recognize(request_data.path)
 
-    # 计算启动时间和结束时间的时间差
+    # 程序计时器结束
     end = time.perf_counter()
 
     # res = {"res": True}
@@ -57,7 +57,7 @@ async def recognize(fileb: UploadFile = File(...)):
     sercice = OcrService()
     results = sercice.recognize("./file/" + fileb.filename)
 
-    # 计算启动时间和结束时间的时间差
+    # 程序计时器结束
     end = time.perf_counter()
 
     # res = {"res": True}
@@ -80,13 +80,13 @@ async def split_recognize(fileb: UploadFile = File(...)):
     np_images = [cv2.imread(image_path) for image_path in splits]
     sercice = OcrService()
     results = sercice.recognize(np_images)
-    # 计算启动时间和结束时间的时间差
+    # 程序计时器结束
     end = time.perf_counter()
 
     vo = RecognizeResponseVO()
     vo.file = fileb.filename
     vo.snaps = results
-    vo.time = end - start
+    vo.time = end-start
     return vo
 
 @app.post('/detect')
@@ -94,8 +94,13 @@ def detect(fileb: UploadFile = File(...)):
     # 写文件 将获取的fileb文件内容，写入到新文件中
     ocr_util.async_write_fileb("./file/" + fileb.filename, fileb)
 
+    start = time.perf_counter()
     sercice = OcrService()
-    return sercice.detect_position("./file/" + fileb.filename)
+    result =  sercice.detect_position("./file/" + fileb.filename)
+    end = time.perf_counter()
+    print(end-start)
+
+    return result
 
 @app.delete('/clean')
 def clean():
