@@ -21,11 +21,11 @@ class OcrService():
         self.text = []
 
         # 读取配置
-        self.module = get_option("Ocr", "module")
-        self.use_gpu = bool(int(get_option("Ocr", "useGpu")))
-        self.output = bool(int(get_option("Ocr", "output")))
-        self.box_thresh = float(get_option("Ocr", "boxThresh"))
-        self.text_thresh = float(get_option("Ocr", "textThresh"))
+        self.module = get_cfg("Ocr", "module")
+        self.use_gpu = bool(int(get_cfg("Ocr", "useGpu")))
+        self.output = bool(int(get_cfg("Ocr", "output")))
+        self.box_thresh = float(get_cfg("Ocr", "boxThresh"))
+        self.text_thresh = float(get_cfg("Ocr", "textThresh"))
 
         # chinese_ocr_db_crnn_mobile
         # chinese_ocr_db_crnn_server
@@ -58,8 +58,8 @@ class OcrService():
             use_gpu=self.use_gpu,           #是否使用 GPU；若使用GPU，请先设置CUDA_VISIBLE_DEVICES环境变量
             output_dir='ocr_result',        #图片的保存路径，默认设为 ocr_result；
             visualization=self.output,      #是否将识别结果保存为图片文件；
-            box_thresh=self.box_thresh,      #检测文本框置信度的阈值；（准确率）
-            text_thresh=self.text_thresh)    #识别中文文本置信度的阈值；（准确率）
+            box_thresh=self.box_thresh,     #检测文本框置信度的阈值；（准确率）
+            text_thresh=self.text_thresh)   #识别中文文本置信度的阈值；（准确率）
 
         self.text = []
         snaps : OcrSnap = []
