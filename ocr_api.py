@@ -20,7 +20,7 @@ def startAPI():
         port = int(get_cfg("Web","port")),
         workers = 1)
 
-@app.post('/recognize/local')
+@app.post(path='/recognize/local',description='识别本地图片')
 async def recognize_local(request_data: RecognizeRequestVO):
 
     # 程序计时器启动
@@ -39,7 +39,7 @@ async def recognize_local(request_data: RecognizeRequestVO):
     vo.time = timer_get()
     return vo
 
-@app.post("/recognize")
+@app.post(path="/recognize",description='识别上传的图片')
 async def recognize(fileb: UploadFile = File(...)):
 
     # 程序计时器启动
@@ -61,7 +61,7 @@ async def recognize(fileb: UploadFile = File(...)):
     vo.time = timer_get()
     return vo
 
-@app.post("/split")
+@app.post(path="/split",description='分割并识别图片')
 async def split_recognize(fileb: UploadFile = File(...)):
     # 程序计时器启动
     timer_start()
@@ -83,7 +83,7 @@ async def split_recognize(fileb: UploadFile = File(...)):
     vo.time = timer_get()
     return vo
 
-@app.post('/detect')
+@app.post(path='/detect',description='检测文本位置')
 async def detect(fileb: UploadFile = File(...)):
 
     # 写文件 将获取的fileb文件内容，写入到新文件中
@@ -97,10 +97,10 @@ async def detect(fileb: UploadFile = File(...)):
 
     return result
 
-@app.delete('/clean')
+@app.delete(path='/clean',description='清空临时文件夹')
 def clean():
     return ocr_util.clean_folder('./temp')
 
-@app.get('/test/name={name}')
+@app.get('/test/name={name}',description='测试')
 def test(name: str = None):
     return name
