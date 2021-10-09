@@ -20,14 +20,13 @@ def startAPI():
         port = int(get_cfg("Web","port")),
         workers = 1)
 
-@app.post(path='/recognize/local',description='识别本地图片')
-async def recognize_local(request_data: RecognizeRequestVO):
-
+@app.post(path='/ocr/hub/local',tags=['paddleHub'],description='识别本地图片')
+async def ocr_hub_local(request_data: RecognizeRequestVO):
     # 程序计时器启动
     timer_start()
 
     vo = RecognizeResponseVO()
-    sercice = OcrService()
+    sercice = HubService()
     results = sercice.recognize(request_data.path)
 
     # 程序计时器结束
@@ -39,9 +38,8 @@ async def recognize_local(request_data: RecognizeRequestVO):
     vo.time = timer_get()
     return vo
 
-@app.post(path="/recognize",description='识别上传的图片')
-async def recognize(fileb: UploadFile = File(...)):
-
+@app.post(path="/ocr/hub/",tags=['paddleHub'],description='识别上传的图片')
+async def ocr_hub(fileb: UploadFile = File(...)):
     # 程序计时器启动
     timer_start()
 
@@ -49,7 +47,7 @@ async def recognize(fileb: UploadFile = File(...)):
     await ocr_util.async_write_fileb("./file/" + fileb.filename, fileb)
     #开始识别
     vo = RecognizeResponseVO()
-    sercice = OcrService()
+    sercice = HubService()
     results = sercice.recognize("./file/" + fileb.filename)
 
     # 程序计时器结束
@@ -61,18 +59,18 @@ async def recognize(fileb: UploadFile = File(...)):
     vo.time = timer_get()
     return vo
 
-@app.post(path="/split",description='分割并识别图片')
-async def split_recognize(fileb: UploadFile = File(...)):
+@app.post(path="/ocr/hub/split",tags=['paddleHub'],description='分割并识别图片')
+async def ocr_hub_split(template:str='invoice.json',fileb: UploadFile = File(...)):
     # 程序计时器启动
     timer_start()
     # 写文件 将获取的fileb文件内容，写入到新文件中
     await ocr_util.async_write_fileb("./file/" + fileb.filename, fileb)
 
     service = TemplateService()
-    splits = service.split_image(fileb.filename,'template1.json')
+    splits = service.split_image(fileb.filename,template)
 
     np_images = [cv2.imread(image_path) for image_path in splits]
-    sercice = OcrService()
+    sercice = HubService()
     results = sercice.recognize(np_images)
     # 程序计时器结束
     timer_end()
@@ -83,24 +81,44 @@ async def split_recognize(fileb: UploadFile = File(...)):
     vo.time = timer_get()
     return vo
 
-@app.post(path='/detect',description='检测文本位置')
-async def detect(fileb: UploadFile = File(...)):
+@app.post(path='/ocr/hub/detect',tags=['paddleHub'],description='检测文本位置')
+async def ocr_hub_detect(fileb: UploadFile = File(...)):
 
     # 写文件 将获取的fileb文件内容，写入到新文件中
     await ocr_util.async_write_fileb("./file/" + fileb.filename, fileb)
 
     timer_start()
-    sercice = OcrService()
+    sercice = HubService()
     result =  sercice.detect_position("./file/" + fileb.filename)
     timer_end()
     print(timer_get())
 
     return result
 
-@app.delete(path='/clean',description='清空临时文件夹')
+@app.post(path="/ocr",tags=['paddleOcr'],description='OCR识别上传的图片')
+async def ocr(fileb: UploadFile = File(...)):
+    # 程序计时器启动
+    timer_start()
+
+    # 写文件 将获取的fileb文件内容，写入到新文件中
+    await ocr_util.async_write_fileb("./file/" + fileb.filename, fileb)
+    #开始识别
+    vo = OcrResponseVO()
+    sercice = OcrService()
+    results = sercice.recognize("./file/" + fileb.filename)
+
+    # 程序计时器结束
+    timer_end()
+
+    vo.file = fileb.filename
+    vo.datas = results
+    vo.time = timer_get()
+    return vo
+
+@app.delete(path='/clean',tags=['common'],description='清空临时文件夹')
 def clean():
     return ocr_util.clean_folder('./temp')
 
-@app.get('/test/name={name}',description='测试')
+@app.get('/test/name={name}',tags=['common'],description='测试')
 def test(name: str = None):
     return name

@@ -35,6 +35,11 @@ class RecognizeResponseVO(BaseModel):
     time: float = None
     snaps: OcrSnap=[]
 
+class OcrResponseVO(BaseModel):
+    file: str = None
+    time: float = None
+    datas: OcrData=[]
+
 
 
 

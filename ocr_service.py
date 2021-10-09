@@ -13,9 +13,10 @@ import cv2
 import paddlehub as hub
 from ocr_vo import *
 from ocr_config import *
+from paddleocr import PaddleOCR, draw_ocr
 
-# Ocr识别类
-class OcrService():
+# PaddleHub识别类
+class HubService():
 
     def __init__(self):
         self.text = []
@@ -46,7 +47,6 @@ class OcrService():
         return detection_results
 
     def recognize(self, data):
-
         np_images =None
         if type(data) == str:
             np_images =[cv2.imread(data)] #读取测试文件夹test.txt中的照片路径
@@ -79,10 +79,65 @@ class OcrService():
             snaps.append(snap);
         return snaps
 
-    def writeText(self, filename):
+    # 结果写文本
+    def write_text(self, filename):
         with open(filename, 'w') as f:
             for i in self.text:
                 f.write(str(i))
+
+# paddleOcr识别类
+class OcrService():
+    def __init__(self):
+        self.datas = []
+        self.text = []
+        # 读取配置
+        self.ocr = PaddleOCR(
+            use_angle_cls=True,
+            use_gpu=bool(int(get_cfg("Ocr", "useGpu")))
+        )
+
+        self.module = get_cfg("Ocr", "module")
+        self.use_gpu = bool(int(get_cfg("Ocr", "useGpu")))
+        self.output = bool(int(get_cfg("Ocr", "output")))
+        self.box_thresh = float(get_cfg("Ocr", "boxThresh"))
+        self.text_thresh = float(get_cfg("Ocr", "textThresh"))
+
+    def recognize(self, img_path):
+        self.text = []
+        ocr_datas: OcrData = []
+        self.datas = self.ocr.ocr(img_path, cls=True)
+        for data in self.datas:
+            ocr_data = OcrData()
+            ocr_data.text = str(data[1][0])
+            ocr_data.confidence = str(data[1][1])
+            ocr_data.position = str(data[0])
+            ocr_datas.append(ocr_data)
+            self.text.append(str(data[1][0]))
+
+        if self.output:
+            self.write_img(img_path)
+
+        return ocr_datas
+
+    # 结果写文本
+    def write_text(self, filename):
+        with open(filename, 'w') as f:
+            for i in self.text:
+                f.write(str(i))
+
+    # 输出结果图片
+    def write_img(self,img_path):
+        from PIL import Image
+
+        image = Image.open(img_path)
+        image = ocr_util.correct_rotate(image) #纠正自动旋转
+        boxes = [data[0] for data in self.datas]
+        txts = [data[1][0] for data in self.datas]
+        scores = [data[1][1] for data in self.datas]
+        im_show = draw_ocr(image, boxes, txts, scores)
+        im_show = Image.fromarray(im_show)
+        im_show.save('result.jpg')  # 结果图片保存在代码同级文件夹中。
+
 
 # 模板处理类
 class TemplateService():
@@ -122,3 +177,4 @@ class TemplateService():
             cv2.imencode('.jpg', crop)[1].tofile("./temp/{}-{}-{}".format(str(num),box['field'],file_name))
             num = num + 1
         return text
+
