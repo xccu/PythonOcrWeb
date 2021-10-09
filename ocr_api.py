@@ -69,9 +69,8 @@ async def ocr_hub_split(template:str='invoice.json',fileb: UploadFile = File(...
     service = TemplateService()
     splits = service.split_image(fileb.filename,template)
 
-    np_images = [cv2.imread(image_path) for image_path in splits]
     sercice = HubService()
-    results = sercice.recognize(np_images)
+    results = sercice.recognize(splits)
     # 程序计时器结束
     timer_end()
 

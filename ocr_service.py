@@ -32,12 +32,12 @@ class HubService():
         # chinese_ocr_db_crnn_server
         self.ocr = hub.Module(name=self.module)
 
-    def detect_position(self, data):
+    def detect_position(self, path):
         np_images = None
-        if type(data) == str:
-            np_images = [cv2.imread(data)]  # 读取测试文件夹test.txt中的照片路径
-        elif type(data) == list:
-            np_images = data
+        if type(path) == str:
+            np_images = [cv2.imread(path)]  # 读取测试文件夹test.txt中的照片路径
+        elif type(path) == list:
+            np_images = path
 
         detection_results=self.ocr.text_detector_module.detect_text(
             images=np_images,
@@ -46,12 +46,12 @@ class HubService():
 
         return detection_results
 
-    def recognize(self, data):
+    def recognize(self, path):
         np_images =None
-        if type(data) == str:
-            np_images =[cv2.imread(data)] #读取测试文件夹test.txt中的照片路径
-        elif type(data) == list:
-            np_images = data
+        if type(path) == str:
+            np_images =[cv2.imread(path)] #读取测试文件夹test.txt中的照片路径
+        elif type(path) == list:
+            np_images = [cv2.imread(image_path) for image_path in path]
 
         results = self.ocr.recognize_text(
             images=np_images,               #图片数据，ndarray.shape 为 [H, W, C]，BGR格式；
@@ -63,12 +63,16 @@ class HubService():
 
         self.text = []
         snaps : OcrSnap = []
+        i=0
         for result in results:
             ocr_datas : OcrData = []
             snap =OcrSnap()
-            snap.path=result['save_path']
-            datas = result['data']
-            for data in datas:
+            if type(path) == list:
+                snap.name = path[i]
+                i+=1
+            else:
+                snap.name = path
+            for data in result['data']:
                 ocr_data = OcrData()
                 ocr_data.text = data['text']
                 ocr_data.confidence = data['confidence']

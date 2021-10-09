@@ -9,7 +9,7 @@ class OcrData(BaseModel):
 
 #Ocr截图
 class OcrSnap(BaseModel):
-    path: str = None
+    name: str = None
     datas: OcrData=[]
 
 class Box():
