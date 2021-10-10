@@ -1,13 +1,15 @@
 import configparser
+
+import PIL
 from fastapi import UploadFile
 import os
 import time
-
+from PIL import Image
 from distlib._backport import shutil
 
 import ocr_global
 
-#文件操作
+# 文件操作
 def read(file_path,encoding = 'utf-8'):
     with open(file_path, 'r', encoding=encoding) as f:
         return f.read()
@@ -38,7 +40,7 @@ def clean_folder(folder_path):
             shutil.rmtree(file_path)
     return result
 
-#计时器
+# 计时器
 def timer_start():
     ocr_global.start = time.perf_counter()
 
@@ -51,8 +53,10 @@ def timer_get():
     ocr_global.start = 0.0
     return span
 
-# PIL 纠正自动旋转
-def correct_rotate(img):
+# 图像处理
+
+# PIL 纠正图像自动旋转
+def img_correct_rotate(img):
     if not img:
         return img
 
@@ -90,3 +94,27 @@ def correct_rotate(img):
             img = img.rotate(90, expand=True)
 
     return img
+
+# 图片二值化
+def img_binaryzation(path):
+
+    img = Image.open(path)
+
+    # 模式L”为灰色图像，它的每个像素用8个bit表示，0表示黑，255表示白，其他数字表示不同的灰度。
+    gray_img = img.convert('L')
+    #gray_img.save("./file/list3-1.jpg")
+
+    # 自定义灰度界限，大于这个值为黑色，小于这个值为白色
+    threshold = 150
+
+    table = []
+    for i in range(256):
+        if i < threshold:
+            table.append(0)
+        else:
+            table.append(1)
+
+    # 图片二值化
+    binary_img = gray_img.point(table, '1')
+    binary_img.save(path)
+

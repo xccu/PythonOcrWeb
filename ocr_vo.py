@@ -5,7 +5,12 @@ from pydantic import BaseModel
 class OcrData(BaseModel):
     text : str = None
     confidence : str = None
-    position : str=None
+    position : str = None
+
+class OcrSnapData(BaseModel):
+    text : str = None
+    confidence : str = None
+    name : str = None
 
 #Ocr截图
 class OcrSnap(BaseModel):
@@ -30,16 +35,24 @@ class RecognizeRequestVO(BaseModel):
     path: str = None
 
 #http响应vo
-class RecognizeResponseVO(BaseModel):
+class HubResponseVO(BaseModel):
     file: str = None
-    time: float = None
+    time: float = 0.0
     snaps: OcrSnap=[]
+
+class HubSnapResponseVO(BaseModel):
+    file: str = None
+    time: float = 0.0
+    datas: OcrSnapData=[]
 
 class OcrResponseVO(BaseModel):
     file: str = None
-    time: float = None
+    time: float = 0.0
     datas: OcrData=[]
 
-
+class OcrSnapResponseVO(BaseModel):
+    file: str = None
+    time: float = 0.0
+    datas: OcrSnapData=[]
 
 

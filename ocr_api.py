@@ -25,7 +25,7 @@ async def ocr_hub_local(request_data: RecognizeRequestVO):
     # 程序计时器启动
     timer_start()
 
-    vo = RecognizeResponseVO()
+    vo = HubResponseVO()
     sercice = HubService()
     results = sercice.recognize(request_data.path)
 
@@ -46,7 +46,7 @@ async def ocr_hub(fileb: UploadFile = File(...)):
     # 写文件 将获取的fileb文件内容，写入到新文件中
     await ocr_util.async_write_fileb("./file/" + fileb.filename, fileb)
     #开始识别
-    vo = RecognizeResponseVO()
+    vo = HubResponseVO()
     sercice = HubService()
     results = sercice.recognize("./file/" + fileb.filename)
 
@@ -59,8 +59,8 @@ async def ocr_hub(fileb: UploadFile = File(...)):
     vo.time = timer_get()
     return vo
 
-@app.post(path="/ocr/hub/split",tags=['paddleHub'],description='分割并识别图片')
-async def ocr_hub_split(template:str='invoice.json',fileb: UploadFile = File(...)):
+@app.post(path="/ocr/hub/snap",tags=['paddleHub'],description='分割并识别图片')
+async def ocr_hub_snap(template:str='invoice.json',fileb: UploadFile = File(...)):
     # 程序计时器启动
     timer_start()
     # 写文件 将获取的fileb文件内容，写入到新文件中
@@ -70,13 +70,13 @@ async def ocr_hub_split(template:str='invoice.json',fileb: UploadFile = File(...
     splits = service.split_image(fileb.filename,template)
 
     sercice = HubService()
-    results = sercice.recognize(splits)
+    results = sercice.recognize_snap(splits)
     # 程序计时器结束
     timer_end()
 
-    vo = RecognizeResponseVO()
+    vo = HubSnapResponseVO()
     vo.file = fileb.filename
-    vo.snaps = results
+    vo.datas = results
     vo.time = timer_get()
     return vo
 
@@ -105,6 +105,29 @@ async def ocr(fileb: UploadFile = File(...)):
     vo = OcrResponseVO()
     sercice = OcrService()
     results = sercice.recognize("./file/" + fileb.filename)
+
+    # 程序计时器结束
+    timer_end()
+
+    vo.file = fileb.filename
+    vo.datas = results
+    vo.time = timer_get()
+    return vo
+
+@app.post(path="/ocr/snap",tags=['paddleOcr'],description='OCR识别上传的图片')
+async def ocr_snap(template:str='invoice.json',fileb: UploadFile = File(...)):
+    # 程序计时器启动
+    timer_start()
+
+    # 写文件 将获取的fileb文件内容，写入到新文件中
+    await ocr_util.async_write_fileb("./file/" + fileb.filename, fileb)
+    service = TemplateService()
+    snaps = service.split_image(fileb.filename, template)
+
+    #开始识别
+    vo = OcrSnapResponseVO()
+    sercice = OcrService()
+    results = sercice.recognize_snap(snaps)
 
     # 程序计时器结束
     timer_end()

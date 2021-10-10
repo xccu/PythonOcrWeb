@@ -35,7 +35,7 @@ class HubService():
     def detect_position(self, path):
         np_images = None
         if type(path) == str:
-            np_images = [cv2.imread(path)]  # 读取测试文件夹test.txt中的照片路径
+            np_images = [cv2.imread(path)]  # 读取图片路径
         elif type(path) == list:
             np_images = path
 
@@ -47,11 +47,10 @@ class HubService():
         return detection_results
 
     def recognize(self, path):
-        np_images =None
-        if type(path) == str:
-            np_images =[cv2.imread(path)] #读取测试文件夹test.txt中的照片路径
-        elif type(path) == list:
-            np_images = [cv2.imread(image_path) for image_path in path]
+
+        if type(path) != str:
+            return None
+        np_images = [cv2.imread(path)]
 
         results = self.ocr.recognize_text(
             images=np_images,               #图片数据，ndarray.shape 为 [H, W, C]，BGR格式；
@@ -63,15 +62,10 @@ class HubService():
 
         self.text = []
         snaps : OcrSnap = []
-        i=0
         for result in results:
             ocr_datas : OcrData = []
             snap =OcrSnap()
-            if type(path) == list:
-                snap.name = path[i]
-                i+=1
-            else:
-                snap.name = path
+            snap.name = path
             for data in result['data']:
                 ocr_data = OcrData()
                 ocr_data.text = data['text']
@@ -82,6 +76,35 @@ class HubService():
             snap.datas = ocr_datas
             snaps.append(snap);
         return snaps
+
+    def recognize_snap(self, path):
+
+        if type(path) != list:
+            return None
+        np_images = [cv2.imread(image_path) for image_path in path]
+
+        results = self.ocr.recognize_text(
+            images=np_images,               #图片数据，ndarray.shape 为 [H, W, C]，BGR格式；
+            use_gpu=self.use_gpu,           #是否使用 GPU；若使用GPU，请先设置CUDA_VISIBLE_DEVICES环境变量
+            output_dir='ocr_result',        #图片的保存路径，默认设为 ocr_result；
+            visualization=self.output,      #是否将识别结果保存为图片文件；
+            box_thresh=self.box_thresh,     #检测文本框置信度的阈值；（准确率）
+            text_thresh=self.text_thresh)   #识别中文文本置信度的阈值；（准确率）
+
+        self.text = []
+        ocr_snap_datas: OcrSnapData = []
+        i=0
+        for result in results:
+            ocr_snap_data = OcrSnapData()
+            ocr_snap_data.text = ''
+            ocr_snap_data.name = path[i]
+            for data in result['data']:
+                ocr_snap_data.text = ocr_snap_data.text + data['text']
+                ocr_snap_data.confidence = data['confidence']
+                self.text.append(str(data['text']))
+            ocr_snap_datas.append(ocr_snap_data)
+            i += 1
+        return ocr_snap_datas
 
     # 结果写文本
     def write_text(self, filename):
@@ -123,6 +146,31 @@ class OcrService():
 
         return ocr_datas
 
+    def recognize_snap(self, path):
+
+        self.text = []
+        np_images = None
+        if type(path) != list:
+            return None
+
+        i=0
+        np_images = [cv2.imread(image_path) for image_path in path]
+        ocr_snap_datas: OcrSnapData = []
+        self.datas = self.ocr.ocr(np_images,det=False,cls=True)
+        for data in self.datas:
+            ocr_snap_data = OcrSnapData()
+            ocr_snap_data.text = str(data[0])
+            ocr_snap_data.confidence = str(data[1])
+            ocr_snap_data.name = path[i]
+            ocr_snap_datas.append(ocr_snap_data)
+            i+=1
+            self.text.append(str(data[0]))
+
+        #if self.output:
+        #    self.write_img(path)
+
+        return ocr_snap_datas
+
     # 结果写文本
     def write_text(self, filename):
         with open(filename, 'w') as f:
@@ -134,7 +182,7 @@ class OcrService():
         from PIL import Image
 
         image = Image.open(img_path)
-        image = ocr_util.correct_rotate(image) #纠正自动旋转
+        image = ocr_util.img_correct_rotate(image) #纠正自动旋转
         boxes = [data[0] for data in self.datas]
         txts = [data[1][0] for data in self.datas]
         scores = [data[1][1] for data in self.datas]
