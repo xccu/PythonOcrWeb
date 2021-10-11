@@ -7,7 +7,8 @@ import time
 from PIL import Image
 from distlib._backport import shutil
 
-import ocr_global
+import ocr_global as glb
+
 
 # 文件操作
 def read(file_path,encoding = 'utf-8'):
@@ -42,15 +43,15 @@ def clean_folder(folder_path):
 
 # 计时器
 def timer_start():
-    ocr_global.start = time.perf_counter()
+    glb.g_start = time.perf_counter()
 
 def timer_end():
-    ocr_global.end = time.perf_counter()
+    glb.g_end = time.perf_counter()
 
 def timer_get():
-    span = ocr_global.end - ocr_global.start
-    ocr_global.end = 0.0
-    ocr_global.start = 0.0
+    span = glb.g_end - glb.g_start
+    glb.g_end = 0.0
+    glb.g_start = 0.0
     return span
 
 # 图像处理

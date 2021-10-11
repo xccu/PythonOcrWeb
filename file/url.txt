@@ -1,0 +1,11 @@
+paddleOcr:
+源码
+https://gitee.com/paddlepaddle/PaddleOCR.git
+
+手写数据集
+https://github.com/PaddlePaddle/PaddleOCR/blob/develop/doc/doc_ch/handwritten_datasets.md
+
+文字检测
+https://github.com/PaddlePaddle/PaddleOCR/blob/develop/doc/doc_ch/detection.md
+
+

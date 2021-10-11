@@ -9,7 +9,7 @@ from ocr_config import *
 from ocr_vo import *
 from ocr_service import *
 from ocr_util import *
-
+import ocr_global as glb
 app = FastAPI()
 
 def startAPI():
@@ -44,11 +44,11 @@ async def ocr_hub(fileb: UploadFile = File(...)):
     timer_start()
 
     # 写文件 将获取的fileb文件内容，写入到新文件中
-    await ocr_util.async_write_fileb("./file/" + fileb.filename, fileb)
+    await async_write_fileb(glb.g_upload_path + fileb.filename, fileb)
     #开始识别
     vo = HubResponseVO()
     sercice = HubService()
-    results = sercice.recognize("./file/" + fileb.filename)
+    results = sercice.recognize(glb.g_upload_path + fileb.filename)
 
     # 程序计时器结束
     timer_end()
@@ -64,7 +64,7 @@ async def ocr_hub_snap(template:str='invoice.json',fileb: UploadFile = File(...)
     # 程序计时器启动
     timer_start()
     # 写文件 将获取的fileb文件内容，写入到新文件中
-    await ocr_util.async_write_fileb("./file/" + fileb.filename, fileb)
+    await async_write_fileb(glb.g_upload_path + fileb.filename, fileb)
 
     service = TemplateService()
     splits = service.split_image(fileb.filename,template)
@@ -84,11 +84,11 @@ async def ocr_hub_snap(template:str='invoice.json',fileb: UploadFile = File(...)
 async def ocr_hub_detect(fileb: UploadFile = File(...)):
 
     # 写文件 将获取的fileb文件内容，写入到新文件中
-    await ocr_util.async_write_fileb("./file/" + fileb.filename, fileb)
+    await async_write_fileb(glb.g_upload_path + fileb.filename, fileb)
 
     timer_start()
     sercice = HubService()
-    result =  sercice.detect_position("./file/" + fileb.filename)
+    result =  sercice.detect_position(glb.g_upload_path + fileb.filename)
     timer_end()
     print(timer_get())
 
@@ -100,11 +100,11 @@ async def ocr(fileb: UploadFile = File(...)):
     timer_start()
 
     # 写文件 将获取的fileb文件内容，写入到新文件中
-    await ocr_util.async_write_fileb("./file/" + fileb.filename, fileb)
+    await async_write_fileb(glb.g_upload_path + fileb.filename, fileb)
     #开始识别
     vo = OcrResponseVO()
     sercice = OcrService()
-    results = sercice.recognize("./file/" + fileb.filename)
+    results = sercice.recognize(glb.g_upload_path + fileb.filename)
 
     # 程序计时器结束
     timer_end()
@@ -120,7 +120,7 @@ async def ocr_snap(template:str='invoice.json',fileb: UploadFile = File(...)):
     timer_start()
 
     # 写文件 将获取的fileb文件内容，写入到新文件中
-    await ocr_util.async_write_fileb("./file/" + fileb.filename, fileb)
+    await async_write_fileb(glb.g_upload_path + fileb.filename, fileb)
     service = TemplateService()
     snaps = service.split_image(fileb.filename, template)
 
@@ -139,7 +139,10 @@ async def ocr_snap(template:str='invoice.json',fileb: UploadFile = File(...)):
 
 @app.delete(path='/clean',tags=['common'],description='清空临时文件夹')
 def clean():
-    return ocr_util.clean_folder('./temp')
+    arr= clean_folder(glb.g_upload_path)
+    arr=arr+clean_folder(glb.g_temp_path)
+    arr = arr + clean_folder(glb.g_ocr_result)
+    return arr
 
 @app.get('/test/name={name}',tags=['common'],description='测试')
 def test(name: str = None):

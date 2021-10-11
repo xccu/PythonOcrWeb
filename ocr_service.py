@@ -6,7 +6,8 @@
 import json
 import os
 
-import ocr_util
+from ocr_global import *
+from ocr_util import *
 
 os.environ['HUB_HOME'] = "./modules"
 import cv2
@@ -47,18 +48,11 @@ class HubService():
         return detection_results
 
     def recognize(self, path):
-
         if type(path) != str:
             return None
-        np_images = [cv2.imread(path)]
 
-        results = self.ocr.recognize_text(
-            images=np_images,               #图片数据，ndarray.shape 为 [H, W, C]，BGR格式；
-            use_gpu=self.use_gpu,           #是否使用 GPU；若使用GPU，请先设置CUDA_VISIBLE_DEVICES环境变量
-            output_dir='ocr_result',        #图片的保存路径，默认设为 ocr_result；
-            visualization=self.output,      #是否将识别结果保存为图片文件；
-            box_thresh=self.box_thresh,     #检测文本框置信度的阈值；（准确率）
-            text_thresh=self.text_thresh)   #识别中文文本置信度的阈值；（准确率）
+        np_images = [cv2.imread(path)]
+        results = self.start_ocr(np_images)  # 开始识别
 
         self.text = []
         snaps : OcrSnap = []
@@ -78,18 +72,11 @@ class HubService():
         return snaps
 
     def recognize_snap(self, path):
-
         if type(path) != list:
             return None
-        np_images = [cv2.imread(image_path) for image_path in path]
 
-        results = self.ocr.recognize_text(
-            images=np_images,               #图片数据，ndarray.shape 为 [H, W, C]，BGR格式；
-            use_gpu=self.use_gpu,           #是否使用 GPU；若使用GPU，请先设置CUDA_VISIBLE_DEVICES环境变量
-            output_dir='ocr_result',        #图片的保存路径，默认设为 ocr_result；
-            visualization=self.output,      #是否将识别结果保存为图片文件；
-            box_thresh=self.box_thresh,     #检测文本框置信度的阈值；（准确率）
-            text_thresh=self.text_thresh)   #识别中文文本置信度的阈值；（准确率）
+        np_images = [cv2.imread(image_path) for image_path in path]
+        results = self.start_ocr(np_images) #开始识别
 
         self.text = []
         ocr_snap_datas: OcrSnapData = []
@@ -106,6 +93,16 @@ class HubService():
             i += 1
         return ocr_snap_datas
 
+    def start_ocr(self,np_images):
+        results = self.ocr.recognize_text(
+            images=np_images,               #图片数据，ndarray.shape 为 [H, W, C]，BGR格式；
+            use_gpu=self.use_gpu,           #是否使用 GPU；若使用GPU，请先设置CUDA_VISIBLE_DEVICES环境变量
+            output_dir=g_ocr_result,        #图片的保存路径，默认设为 ocr_result；
+            visualization=self.output,      #是否将识别结果保存为图片文件；
+            box_thresh=self.box_thresh,     #检测文本框置信度的阈值；（准确率）
+            text_thresh=self.text_thresh)   #识别中文文本置信度的阈值；（准确率）
+        return results
+
     # 结果写文本
     def write_text(self, filename):
         with open(filename, 'w') as f:
@@ -118,6 +115,8 @@ class OcrService():
         self.datas = []
         self.text = []
         # 读取配置
+        # 默认模型：'https://paddleocr.bj.bcebos.com/PP-OCRv2/chinese/ch_PP-OCRv2_det_infer.tar'
+        # 本地 C:\Users\Administrator\.paddleocr\2.3.0.1\ocr\det\ch\ch_PP-OCRv2_det_infer
         self.ocr = PaddleOCR(
             use_angle_cls=True,
             use_gpu=bool(int(get_cfg("Ocr", "useGpu")))
@@ -147,15 +146,14 @@ class OcrService():
         return ocr_datas
 
     def recognize_snap(self, path):
-
-        self.text = []
-        np_images = None
         if type(path) != list:
             return None
 
+        self.text = []
         i=0
         np_images = [cv2.imread(image_path) for image_path in path]
         ocr_snap_datas: OcrSnapData = []
+        self.ocr
         self.datas = self.ocr.ocr(np_images,det=False,cls=True)
         for data in self.datas:
             ocr_snap_data = OcrSnapData()
@@ -182,7 +180,7 @@ class OcrService():
         from PIL import Image
 
         image = Image.open(img_path)
-        image = ocr_util.img_correct_rotate(image) #纠正自动旋转
+        image = img_correct_rotate(image) #纠正自动旋转
         boxes = [data[0] for data in self.datas]
         txts = [data[1][0] for data in self.datas]
         scores = [data[1][1] for data in self.datas]
@@ -193,13 +191,13 @@ class OcrService():
 
 # 模板处理类
 class TemplateService():
-    def __init__(self,img_root = './file/',template_root='./templates/'):
+    def __init__(self,img_root = g_upload_path,template_root='./templates/'):
         self.img_root= img_root
         self.template_root=template_root
 
     def split_image(self,file_name,template):
         # 从json中读取模板信息
-        json_str = ocr_util.read(self.template_root+template)
+        json_str = read(self.template_root+template)
 
         temp = json.loads(json_str)
         boxes = temp['boxes']
