@@ -1,0 +1,10 @@
+Web:
+  port : 8080
+  host : 0.0.0.0
+
+Ocr:
+  module : chinese_ocr_db_crnn_mobile
+  useGpu : 0
+  output : 0
+  boxThresh : 0.7
+  textThresh : 0.7

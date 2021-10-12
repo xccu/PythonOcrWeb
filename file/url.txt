@@ -1,5 +1,6 @@
 paddleOcr:
 源码
+https://github.com/PaddlePaddle/PaddleOCR.git
 https://gitee.com/paddlepaddle/PaddleOCR.git
 
 手写数据集

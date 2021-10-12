@@ -23,11 +23,11 @@ class HubService():
         self.text = []
 
         # 读取配置
-        self.module = get_cfg("Ocr", "module")
-        self.use_gpu = bool(int(get_cfg("Ocr", "useGpu")))
-        self.output = bool(int(get_cfg("Ocr", "output")))
-        self.box_thresh = float(get_cfg("Ocr", "boxThresh"))
-        self.text_thresh = float(get_cfg("Ocr", "textThresh"))
+        self.module = get_yaml('Ocr.module')
+        self.use_gpu = bool(get_yaml('Ocr.useGpu'))
+        self.output = bool(get_yaml('Ocr.output'))
+        self.box_thresh = float(get_yaml('Ocr.boxThresh'))
+        self.text_thresh = float(get_yaml('Ocr.textThresh'))
 
         # chinese_ocr_db_crnn_mobile
         # chinese_ocr_db_crnn_server
@@ -119,14 +119,14 @@ class OcrService():
         # 本地 C:\Users\Administrator\.paddleocr\2.3.0.1\ocr\det\ch\ch_PP-OCRv2_det_infer
         self.ocr = PaddleOCR(
             use_angle_cls=True,
-            use_gpu=bool(int(get_cfg("Ocr", "useGpu")))
+            use_gpu=bool(get_yaml('Ocr.useGpu'))
         )
 
-        self.module = get_cfg("Ocr", "module")
-        self.use_gpu = bool(int(get_cfg("Ocr", "useGpu")))
-        self.output = bool(int(get_cfg("Ocr", "output")))
-        self.box_thresh = float(get_cfg("Ocr", "boxThresh"))
-        self.text_thresh = float(get_cfg("Ocr", "textThresh"))
+        self.module = get_yaml('Ocr.module')
+        self.use_gpu = bool(get_yaml('Ocr.useGpu'))
+        self.output = bool(get_yaml('Ocr.output'))
+        self.box_thresh = float(get_yaml('Ocr.boxThresh'))
+        self.text_thresh = float(get_yaml('Ocr.textThresh'))
 
     def recognize(self, img_path):
         self.text = []

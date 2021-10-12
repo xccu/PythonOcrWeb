@@ -1,33 +1,40 @@
-import json
+import yaml
+import os
 
-import  ocr_util
-from ocr_service import TemplateService
-from ocr_vo import *
-
+import ocr_config
 
 if __name__ == '__main__':
+    # 获取当前文件路径 D:/WorkSpace/StudyPractice/Python_Yaml/YamlStudy
+    filePath = os.path.dirname(__file__)
+    print(filePath)
+    # 获取当前文件的Realpath  D:\WorkSpace\StudyPractice\Python_Yaml\YamlStudy\YamlDemo.py
+    fileNamePath = os.path.split(os.path.realpath(__file__))[0]
+    print(fileNamePath)
+    # 获取配置文件的路径 D:/WorkSpace/StudyPractice/Python_Yaml/YamlStudy\config.yaml
+    yamlPath = os.path.join(fileNamePath, 'config.yaml')
+    print(yamlPath)
+    # 加上 ,encoding='utf-8'，处理配置文件中含中文出现乱码的情况。
+    f = open(yamlPath, 'r', encoding='utf-8')
 
-    # 图片二值化
-    from PIL import Image
+    cont = f.read()
 
-    img = Image.open('./file/list3.jpg')
+    x = yaml.load(cont)
+    print(type(x))
+    print(x)
+    print(x['Web'])
+    print(type(x['Web']))
+    print(x['Web']['port'])
+    print(type(x['Web']['host']))
+    print(x['Ocr'])
+    print(x['Ocr']['module'])
+    print(x['Ocr']['useGpu'])
+    print(x['Ocr']['output'])
+    print(x['Ocr']['boxThresh'])
+    print(x['Ocr']['textThresh'])
 
-    # 模式L”为灰色图像，它的每个像素用8个bit表示，0表示黑，255表示白，其他数字表示不同的灰度。
-    gray_img = img.convert('L')
-    #gray_img.save("./file/list3-1.jpg")
+    print(x.get('Web').get('port'))
 
-    # 自定义灰度界限，大于这个值为黑色，小于这个值为白色
-    threshold = 150
+    print(type(x.get('Ocr')))
 
-    table = []
-    for i in range(256):
-        if i < threshold:
-            table.append(0)
-        else:
-            table.append(1)
-
-    # 图片二值化
-    binary_img = gray_img.point(table, '1')
-    binary_img.save("./file/list3.jpg")
 
 

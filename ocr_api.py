@@ -16,8 +16,8 @@ def startAPI():
     import uvicorn
     uvicorn.run(
         app = app,
-        host = get_cfg("Web","host"),
-        port = int(get_cfg("Web","port")),
+        host = get_yaml('Web.host'),
+        port = get_yaml('Web.port'),
         workers = 1)
 
 @app.post(path='/ocr/hub/local',tags=['paddleHub'],description='识别本地图片')
