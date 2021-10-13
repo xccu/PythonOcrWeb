@@ -147,3 +147,8 @@ def clean():
 @app.get('/test/name={name}',tags=['common'],description='测试')
 def test(name: str = None):
     return name
+
+@app.post(path="/test/json",tags=['common'],description='测试json')
+def test_json(template:dict):
+    print(template)
+    return template['boxes'][1]
